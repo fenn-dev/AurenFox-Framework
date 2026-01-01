@@ -1,0 +1,9 @@
+[package]
+name = "aurenfox"
+version = "0.1.0"
+edition = "2024" 
+
+[dependencies]
+glfw = { version = "0.61.0", features = ["vulkan"] }
+ash = "0.38"
+colored = "2.1"
