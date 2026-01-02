@@ -10,12 +10,11 @@ fn main() {
 
     let main_window_id = app.create_window("AurenFox Window", 800, 600, Some(0));
 
-    app.assign_master(main_window_id.unwrap());
-
-
     let _ = app.create_window("Another Window", 1024, 768, Some(1));
 
-    app.run(Box::new(|app_context| {
+    
+
+    app.run(Some(Box::new(|app_context| {
         program(app_context);
-    }));
+    })));
 }

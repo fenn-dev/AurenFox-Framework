@@ -1,4 +1,6 @@
-use ash::{vk, Entry, Instance};
+use ash::{vk, Entry, Instance, khr};
+use vk::EXT_DEBUG_UTILS_NAME as NAME;
+use vk::EXT_DEBUG_UTILS_SPEC_VERSION as SPEC_VERSION;
 
 pub struct AurenVulkanSetup {
     pub instance: Instance,
@@ -6,6 +8,8 @@ pub struct AurenVulkanSetup {
 
 impl AurenVulkanSetup {
     pub fn new() -> Self {
+        let entry = unsafe { Entry::load().expect("Failed to load Vulkan library") };
+
         let app_info = vk::ApplicationInfo::default()
             .application_name(unsafe { std::ffi::CStr::from_bytes_with_nul_unchecked(b"AurenFox App\0") })
             .application_version(0)

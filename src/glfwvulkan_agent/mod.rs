@@ -3,8 +3,7 @@
 mod window_manager;
 mod device_manager;
 mod vulkan_setup;
-mod swapchain_pipeline;
-
+mod swapchain;
 
 // Uses
 
@@ -13,7 +12,7 @@ use glfw::Context;
 use window_manager::AurenWindowManager;
 use device_manager::AurenDeviceManager;
 use vulkan_setup::AurenVulkanSetup;
-use swapchain_pipeline::AurenVKSwapchainPipeline;
+use swapchain::AurenSwapchain;
 
 // Structures
 
@@ -21,7 +20,7 @@ pub struct GLFWVulkanAgent {
     vulkan_setup: AurenVulkanSetup,
     window_handler: AurenWindowManager,
     device_manager: AurenDeviceManager,
-    swapchain_pipeline: AurenVKSwapchainPipeline,
+    swapchain: AurenSwapchain,
 
     primary_window_id: Option<usize>,
     program_should_end: bool,
@@ -36,8 +35,9 @@ impl GLFWVulkanAgent {
         Self {
             vulkan_setup: AurenVulkanSetup::new(),
             window_handler: AurenWindowManager::new(),
-            device_manager: AurenDeviceManager::new_empty(), // Or however you initialize an empty manager
-            AurenVKSwapchainPipeline::new(),
+            device_manager: AurenDeviceManager::new_empty(),
+            swapchain: AurenSwapchain::new(),
+
             primary_window_id: None,
             program_should_end,
         }

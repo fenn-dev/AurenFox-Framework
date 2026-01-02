@@ -17,11 +17,15 @@ impl AurenFoxFramework {
         return self.backend.create_window(title, width, height, id);
     }
 
-    pub fn run(&mut self, mut user_code: Box<dyn FnMut(&mut AurenFoxFramework) + 'static>) {
+    pub fn run(&mut self, mut user_code: Option<Box<dyn FnMut(&mut AurenFoxFramework) + 'static>>) {
         while !self.backend.should_close() {
             self.process_destroy_queue();
             self.backend.start_frame();
-            user_code(self);
+
+            if let Some(ref mut code) = user_code {
+                code(self);
+            }
+            
             self.backend.end_frame();
         }
     }
