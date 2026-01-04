@@ -1,12 +1,18 @@
 use crate::interfaces::{RHI};
 use std::{cell::RefCell};
+
+pub mod settings;
+
 pub struct AurenFoxFramework {
     pub backend: Box<dyn RHI>,
     pub destroy_queue: std::cell::RefCell<Vec<usize>>,
 }
 
 impl AurenFoxFramework {
-    pub fn new<T: RHI + 'static>(backend_struct: T) -> Self {
+    pub fn new<T: RHI + 'static>(mut backend_struct: T) -> Self {
+
+        backend_struct.new();
+
         Self {
             backend: Box::new(backend_struct),
             destroy_queue: RefCell::new(Vec::new()),

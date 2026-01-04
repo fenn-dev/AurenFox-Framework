@@ -1,7 +1,6 @@
 use glfw::{PWindow};
 
-extern crate glfw;
-
+#[allow(dead_code)]
 pub struct AurenWindow {
     pub window: PWindow,
     pub events: glfw::GlfwReceiver<(f64, glfw::WindowEvent)>,
@@ -11,32 +10,26 @@ pub struct AurenWindow {
     pub id: usize,
 }
 
+#[allow(dead_code)]
 pub struct AurenWindowManager {
     pub glfw: glfw::Glfw,
-    pub windows: Vec<AurenWindow>,
+    windows: Vec<AurenWindow>,
 }
 
 impl AurenWindowManager {
     pub fn new() -> Self {
         let mut glfw = glfw::init(glfw::fail_on_errors).unwrap();
-        
-        // Good practice: Set window hints before creation
-        glfw.window_hint(glfw::WindowHint::ContextVersion(3, 3));
-        glfw.window_hint(glfw::WindowHint::OpenGlProfile(glfw::OpenGlProfileHint::Core));
 
-        AurenWindowManager {
+        glfw.window_hint(glfw::WindowHint::ClientApi(glfw::ClientApiHint::NoApi));
+
+        Self {
             glfw,
             windows: Vec::new(),
         }
     }
-    
-    pub fn create_window(&mut self, title: &str, width: u32, height: u32, id: Option<usize>) -> Result<usize, String> {
-        let (mut window, events) = self.glfw
-            .create_window(width, height, title, glfw::WindowMode::Windowed)
-            .ok_or_else(|| format!("Failed to create GLFW window with title: '{}'", title))?;
 
-        window.set_key_polling(true);
-
+    #[allow(dead_code)]
+    fn shoud_inc_id(&self, id: Option<usize>) -> Result<usize, String> {
         let final_id: usize = match id {
             Some(provided_id) => {
                 if self.windows.iter().any(|w| w.id == provided_id) {
@@ -53,6 +46,17 @@ impl AurenWindowManager {
                     .unwrap_or(ids.len())
             },
         };
+        return Ok(final_id);
+    }
+
+    pub fn create_window(&mut self, title: &str, width: u32, height: u32, id: Option<usize>) -> Result<usize, String> {
+        let (mut window, events) = self.glfw
+            .create_window(width, height, title, glfw::WindowMode::Windowed)
+            .ok_or_else(|| format!("Failed to create GLFW window with title: '{}'", title))?;
+
+        window.set_key_polling(true);
+
+        let new_id = self.shoud_inc_id(id).expect("Window already exists");
 
         self.windows.push(AurenWindow {
             window,
@@ -60,22 +64,19 @@ impl AurenWindowManager {
             title: title.to_string(),
             width,
             height,
-            id: final_id,
-        });
+            id: new_id});
 
-        Ok(final_id)
+        Ok(new_id)
     }
 
+    #[allow(dead_code)]
     pub fn update(&mut self) {
-        // We poll events via the glfw handle
         self.glfw.poll_events();
 
         for window in &mut self.windows {
-            // "Draining" the events satisfies the compiler for the `events` field
             for (_, event) in glfw::flush_messages(&window.events) {
                 match event {
                     glfw::WindowEvent::FramebufferSize(w, h) => {
-                        // Now width and height are being "read" and updated!
                         window.width = w as u32;
                         window.height = h as u32;
                     }
