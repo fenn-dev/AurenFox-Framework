@@ -1,4 +1,6 @@
+use ash::{Entry, Instance, vk};
 use glfw::{PWindow};
+use raw_window_handle::{HasDisplayHandle, HasWindowHandle};
 
 #[allow(dead_code)]
 pub struct AurenWindow {
@@ -8,6 +10,7 @@ pub struct AurenWindow {
     pub width: u32,
     pub height: u32,
     pub id: usize,
+    pub surface: vk::SurfaceKHR,
 }
 
 #[allow(dead_code)]
@@ -24,7 +27,7 @@ impl AurenWindowManager {
 
         Self {
             glfw,
-            windows: Vec::new(),
+            windows: Vec::new()
         }
     }
 
@@ -49,7 +52,7 @@ impl AurenWindowManager {
         return Ok(final_id);
     }
 
-    pub fn create_window(&mut self, title: &str, width: u32, height: u32, id: Option<usize>) -> Result<usize, String> {
+    pub fn create_window(&mut self, entry: &Entry, instance: &Instance, title: &str, width: u32, height: u32, id: Option<usize>) -> Result<usize, String> {
         let (mut window, events) = self.glfw
             .create_window(width, height, title, glfw::WindowMode::Windowed)
             .ok_or_else(|| format!("Failed to create GLFW window with title: '{}'", title))?;
@@ -58,13 +61,25 @@ impl AurenWindowManager {
 
         let new_id = self.shoud_inc_id(id).expect("Window already exists");
 
+        let surface = unsafe {
+                ash_window::create_surface(
+                    entry,
+                    instance,
+                    window.display_handle().unwrap().as_raw(),
+                    window.window_handle().unwrap().as_raw(),
+                    None,
+                ).expect("Failed to create surface")
+            };
+
         self.windows.push(AurenWindow {
             window,
             events,
             title: title.to_string(),
             width,
             height,
-            id: new_id});
+            id: new_id,
+            surface,
+        });
 
         Ok(new_id)
     }

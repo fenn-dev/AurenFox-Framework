@@ -4,20 +4,19 @@ use glfw::PWindow;
 pub struct AurenSwapChain {
     instance: Instance,
     logical_device: vk::Device,
-    surface: vk::SurfaceKHR,
     image_format: vk::SurfaceFormatKHR,
-    extent: vk::Extent2D,
+    pub extent: vk::Extent2D,
     vsync: bool,
 }
 
 impl AurenSwapChain {
     pub fn new(
         instance: &Instance, 
-        device: &ash::Device, // You need the ash logical device
+        device: &ash::Device,
         window: &PWindow, 
-        surface: vk::SurfaceKHR, 
+        surface: &vk::SurfaceKHR, 
         vsync: bool, 
-        details: &crate::types::swapchain_support_details
+        details: &crate::types::SwapchainSupportDetails
     ) -> Self {
         // 1. Use the Device loader for the swapchain
         let swapchain_loader = ash::khr::swapchain::Device::new(instance, device);
@@ -33,7 +32,7 @@ impl AurenSwapChain {
         }
 
         let create_info = vk::SwapchainCreateInfoKHR::default()
-            .surface(surface)
+            .surface(*surface)
             .min_image_count(image_count)
             .image_format(surface_format.format)
             .image_color_space(surface_format.color_space)
@@ -56,30 +55,28 @@ impl AurenSwapChain {
         // 4. Return the struct
         Self {
             instance: instance.clone(),
-            logical_device: device.handle(), // or however you store your device handle
-            surface,
+            logical_device: device.handle(),
             image_format: surface_format,
             extent,
             vsync,
         }
     }
     
-    fn choose_swap_surface_format(details: &crate::types::swapchain_support_details) -> vk::SurfaceFormatKHR {
+    fn choose_swap_surface_format(details: &crate::types::SwapchainSupportDetails) -> vk::SurfaceFormatKHR {
         details.formats
         .iter()
-        .cloned() // Ash handles are Copy, but if using a vec, we clone the struct
+        .cloned() 
         .find(|f| {
             f.format == vk::Format::B8G8R8A8_SRGB && 
             f.color_space == vk::ColorSpaceKHR::SRGB_NONLINEAR
         })
         .unwrap_or_else(|| {
-            // If the list is empty, this would panic, matching your logic
             details.formats[0]
         })
     }
 
     fn choose_swap_present_mode(
-        details: &crate::types::swapchain_support_details,
+        details: &crate::types::SwapchainSupportDetails,
         vsync_enabled: bool,
     ) -> vk::PresentModeKHR {
         if !vsync_enabled {
@@ -101,7 +98,7 @@ impl AurenSwapChain {
     }
 
     fn choose_swap_extent(
-        details: &crate::types::swapchain_support_details, 
+        details: &crate::types::SwapchainSupportDetails, 
         window: &glfw::Window
     ) -> vk::Extent2D {
         if details.capabilities.current_extent.width != u32::MAX {

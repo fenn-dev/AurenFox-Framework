@@ -9,8 +9,9 @@ pub struct PhysicalDeviceDetails {
     pub device_type: vk::PhysicalDeviceType,
     pub graphics_index: Option<u32>,
     pub vram_mb: u64,
-    pub score: i32,
+    pub score: u32,
     pub queue_families: Vec<QueueFamilyProperties>,
+    pub properties: vk::PhysicalDeviceProperties,
 }
 
 pub struct AurenDevice {
@@ -22,6 +23,23 @@ impl AurenDevice {
         let mut slf = Self { devices: Vec::new() };
         slf.reload_devices(instance);
         slf
+    }
+
+    fn score_physical_device(properties: &vk::PhysicalDeviceProperties) -> u32 {
+        let mut score = 0;
+
+        if properties.device_type == vk::PhysicalDeviceType::DISCRETE_GPU {
+            score += 10000; 
+        }
+
+        // 2. Integrated GPUs are still good, but second choice
+        if properties.device_type == vk::PhysicalDeviceType::INTEGRATED_GPU {
+            score += 1000;
+        }
+
+        score += properties.limits.max_image_dimension2_d;
+
+        score
     }
 
     pub fn reload_devices(&mut self, instance: &Instance) {
@@ -52,11 +70,12 @@ impl AurenDevice {
                 .find(|(_, info)| info.queue_flags.contains(vk::QueueFlags::GRAPHICS))
                 .map(|(i, _)| i as u32);
 
-            let mut score = vram_mb as i32;
-            if props.device_type == vk::PhysicalDeviceType::DISCRETE_GPU {
-                score += 1000;
-            }
+            let properties = unsafe { instance.get_physical_device_properties(device) };
 
+            let mut score = vram_mb as u32;
+
+            score += Self::score_physical_device(&properties);
+            
             PhysicalDeviceDetails {
                 handle: device,
                 name,
@@ -65,6 +84,7 @@ impl AurenDevice {
                 score,
                 graphics_index,
                 queue_families,
+                properties,
             }
         }).collect();
     }

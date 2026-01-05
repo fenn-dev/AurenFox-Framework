@@ -1,9 +1,10 @@
-use ash::{vk, Instance, Entry};
+use ash::{Entry, Instance, khr, vk};
 use std::ffi::CString;
 
 pub struct AurenContext {
     pub entry: Entry, 
     pub instance: Instance,
+    pub surface_loader: khr::surface::Instance,
     pub logical_device: Option<ash::Device>,
 }
 
@@ -41,9 +42,12 @@ impl AurenContext {
                 .expect("Failed to create Vulkan instance")
         };
 
+        let surface_loader = khr::surface::Instance::new(&entry, &instance);
+
         Self {
             entry,
             instance,
+            surface_loader,
             logical_device: None,
         }
     }

@@ -34,14 +34,32 @@ impl Default for SceneData {
     }
 }
 
-pub struct swapchain_support_details {
+pub struct SwapchainSupportDetails {
     pub capabilities: vk::SurfaceCapabilitiesKHR,
     pub formats: Vec<vk::SurfaceFormatKHR>,
     pub present_modes: Vec<vk::PresentModeKHR>,
 }
 
-impl swapchain_support_details {
-    fn is_complete(&self) -> bool {
-        return !self.formats.is_empty() && !self.present_modes.is_empty();
+impl SwapchainSupportDetails {
+    pub fn new(physical_device: vk::PhysicalDevice, surface_loader: &ash::khr::surface::Instance, surface: vk::SurfaceKHR) -> Self {
+        unsafe {
+            let capabilities = surface_loader
+                .get_physical_device_surface_capabilities(physical_device, surface)
+                .expect("Failed to get surface capabilities");
+
+            let formats = surface_loader
+                .get_physical_device_surface_formats(physical_device, surface)
+                .expect("Failed to get surface formats");
+
+            let present_modes = surface_loader
+                .get_physical_device_surface_present_modes(physical_device, surface)
+                .expect("Failed to get surface present modes");
+
+            Self {
+                capabilities,
+                formats,
+                present_modes,
+            }
+        }
     }
 }
