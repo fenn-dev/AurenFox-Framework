@@ -1,7 +1,6 @@
-use ash::vk;
+use ash::{amd::display_native_hdr::Device, vk};
 
 pub struct AurenRenderer {
-    pub render_pass: vk::RenderPass,
     pub extent: vk::Extent2D,
     pub descriptor_set_layout: vk::DescriptorSetLayout,
     pub pipeline_layout: vk::PipelineLayout,
@@ -9,13 +8,15 @@ pub struct AurenRenderer {
     pub descriptor_pool: vk::DescriptorPool,
     pub descriptor_set: vk::DescriptorSet,
     pub logical_device: ash::Device,
+    pub render_pass: Option<vk::RenderPass>,
+    pub frame_buffers: Vec<vk::Framebuffer>,
 }
 
 impl AurenRenderer {
     pub fn new(
         logical_device: ash::Device, 
-        render_pass: vk::RenderPass, 
-        extent: vk::Extent2D
+        extent: vk::Extent2D,
+        surface_format: vk::Format,
     ) -> Self {
         // 1. Descriptor Set Layout
         let bindings = [
@@ -67,11 +68,10 @@ impl AurenRenderer {
             logical_device.allocate_descriptor_sets(&alloc_info).unwrap()[0]
         };
 
-        // Note: Real implementation would load actual SPIR-V here
         let graphics_pipeline = vk::Pipeline::null(); 
 
+
         Self {
-            render_pass,
             extent,
             descriptor_set_layout,
             pipeline_layout,
@@ -79,6 +79,8 @@ impl AurenRenderer {
             descriptor_pool,
             descriptor_set,
             logical_device,
+            render_pass: None,
+            frame_buffers: Vec::new(),
         }
     }
 
@@ -177,6 +179,79 @@ impl AurenRenderer {
         unsafe {
             self.logical_device.update_descriptor_sets(&writes, &[]);
         }
+    }
+
+    pub fn create_render_pass(&mut self, surface_format: vk::Format, device: &ash::Device) -> vk::RenderPass {
+
+        let color_attachment = vk::AttachmentDescription::default()
+            .format(surface_format)
+            .samples(vk::SampleCountFlags::TYPE_1)
+            .load_op(vk::AttachmentLoadOp::CLEAR)
+            .store_op(vk::AttachmentStoreOp::STORE)
+            .stencil_load_op(vk::AttachmentLoadOp::DONT_CARE)
+            .stencil_store_op(vk::AttachmentStoreOp::DONT_CARE)
+            .initial_layout(vk::ImageLayout::UNDEFINED)
+            .final_layout(vk::ImageLayout::PRESENT_SRC_KHR);
+
+        let attachments = [color_attachment];
+
+        let color_attachment_refs = [
+            vk::AttachmentReference::default()
+                .attachment(0)
+                .layout(vk::ImageLayout::COLOR_ATTACHMENT_OPTIMAL)
+        ];
+
+        let subpass = vk::SubpassDescription::default()
+            .pipeline_bind_point(vk::PipelineBindPoint::GRAPHICS)
+            .color_attachments(&color_attachment_refs);
+
+        let subpasses = [subpass];
+
+        let dependency = vk::SubpassDependency::default()
+            .src_subpass(vk::SUBPASS_EXTERNAL)
+            .dst_subpass(0)
+            .src_stage_mask(vk::PipelineStageFlags::COLOR_ATTACHMENT_OUTPUT)
+            .src_access_mask(vk::AccessFlags::empty())
+            .dst_stage_mask(vk::PipelineStageFlags::COLOR_ATTACHMENT_OUTPUT)
+            .dst_access_mask(vk::AccessFlags::COLOR_ATTACHMENT_WRITE)
+            .dependency_flags(vk::DependencyFlags::empty());
+
+        let dependencies = [dependency];
+
+        let render_pass_info = vk::RenderPassCreateInfo::default()
+            .attachments(&attachments)
+            .subpasses(&subpasses)
+            .dependencies(&dependencies);
+
+        return unsafe {
+            device.create_render_pass(&render_pass_info, None)
+            .expect("Failed to create render pass!")
+        };
+    }
+
+    pub fn create_framebuffers(
+        &mut self,
+        device: &ash::Device,
+        render_pass: vk::RenderPass,
+        swapchain_extent: vk::Extent2D,
+        image_views: &[vk::ImageView],
+    ) {
+        self.frame_buffers = image_views
+            .iter()
+            .map(|&view| {
+                let attachments = [view];
+                let create_info = vk::FramebufferCreateInfo::default()
+                    .render_pass(render_pass)
+                    .attachments(&attachments)
+                    .width(swapchain_extent.width)
+                    .height(swapchain_extent.height)
+                    .layers(1);
+
+                unsafe {
+                    device.create_framebuffer(&create_info, None)
+                        .expect("Failed to create framebuffer")
+                }
+        }).collect();
     }
 }
 

@@ -5,3 +5,4 @@ pub mod device;
 pub mod swapchain;
 pub mod types;
 pub mod renderer;
+pub mod buffers;

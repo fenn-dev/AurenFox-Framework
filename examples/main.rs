@@ -61,7 +61,11 @@ fn main() {
         &details
     );
 
-    let renderer = AurenRenderer::new(context.logical_device.expect("err"), swapchain, swapchain.extent);
+    let mut renderer = AurenRenderer::new(context.logical_device.clone().expect("err"), swapchain.extent, swapchain.image_format.format);
+
+    renderer.create_render_pass(swapchain.image_format.format, &context.logical_device.clone().expect("err"));
+
+    
 
     while !window_manager.get_window_by_id(0).expect("Couldnt find window").window.should_close() {
         window_manager.update();

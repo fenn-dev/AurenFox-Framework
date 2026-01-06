@@ -1,12 +1,12 @@
-use ash::{Instance, vk};
+use ash::{Instance, khr::{self, swapchain}, vk};
 use glfw::PWindow;
 
 pub struct AurenSwapChain {
     instance: Instance,
     logical_device: vk::Device,
-    image_format: vk::SurfaceFormatKHR,
+    pub image_format: vk::SurfaceFormatKHR,
     pub extent: vk::Extent2D,
-    vsync: bool,
+    pub vsync: bool,
 }
 
 impl AurenSwapChain {
@@ -21,7 +21,7 @@ impl AurenSwapChain {
         // 1. Use the Device loader for the swapchain
         let swapchain_loader = ash::khr::swapchain::Device::new(instance, device);
 
-        let surface_format = Self::choose_swap_surface_format(details);
+        let surface_format_khr = Self::choose_swap_surface_format(details);
         let present_mode = Self::choose_swap_present_mode(details, vsync);
         let extent = Self::choose_swap_extent(details, window);
 
@@ -34,8 +34,8 @@ impl AurenSwapChain {
         let create_info = vk::SwapchainCreateInfoKHR::default()
             .surface(*surface)
             .min_image_count(image_count)
-            .image_format(surface_format.format)
-            .image_color_space(surface_format.color_space)
+            .image_format(surface_format_khr.format)
+            .image_color_space(surface_format_khr.color_space)
             .image_extent(extent)
             .image_array_layers(1)
             .image_usage(vk::ImageUsageFlags::COLOR_ATTACHMENT)
@@ -45,18 +45,15 @@ impl AurenSwapChain {
             .present_mode(present_mode)
             .clipped(true);
 
-        // 3. The actual creation call
         let swapchain = unsafe {
             swapchain_loader
                 .create_swapchain(&create_info, None)
                 .expect("Failed to create swap chain!")
         };
-
-        // 4. Return the struct
         Self {
             instance: instance.clone(),
             logical_device: device.handle(),
-            image_format: surface_format,
+            image_format: surface_format_khr,
             extent,
             vsync,
         }
@@ -116,6 +113,12 @@ impl AurenSwapChain {
                 details.capabilities.min_image_extent.height,
                 details.capabilities.max_image_extent.height,
             ),
+        }
+    }
+
+    pub fn get_images(&self, swapchain_loader: khr::swapchain::Device, handle: vk::SwapchainKHR) -> Vec<vk::Image> {
+        unsafe {
+            swapchain_loader.get_swapchain_images(handle).expect("Failed to get swapchain images")
         }
     }
 }
