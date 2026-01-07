@@ -11,7 +11,7 @@ pub struct Vertex {
 #[repr(C)]
 #[derive(Debug, Clone, Copy)]
 pub struct SceneData {
-    pub model_matrix: [f32; 16], // float4x4
+    pub model_matrix: [[f32; 4]; 4], // float4x4
     pub base_color: [f32; 4],    // float4
     pub time: f32,               // For math-based animations
     pub _padding: [f32; 3],      // Alignment to 16-byte boundary
@@ -22,14 +22,14 @@ impl Default for SceneData {
     fn default() -> Self {
         Self {
             model_matrix: [
-                1.0, 0.0, 0.0, 0.0,
-                0.0, 1.0, 0.0, 0.0,
-                0.0, 0.0, 1.0, 0.0,
-                0.0, 0.0, 0.0, 1.0,
+                [1.0, 0.0, 0.0, 0.0], // Row 0
+                [0.0, 1.0, 0.0, 0.0], // Row 1
+                [0.0, 0.0, 1.0, 0.0], // Row 2
+                [0.0, 0.0, 0.0, 1.0], // Row 3
             ],
             base_color: [1.0, 1.0, 1.0, 1.0],
             time: 0.0,
-            _padding: [0.0; 3],
+            _padding: [0.0, 0.0, 0.0],
         }
     }
 }

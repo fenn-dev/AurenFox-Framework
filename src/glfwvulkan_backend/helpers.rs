@@ -5,7 +5,7 @@ use std::ffi::CStr;
 /// Standardized info logging: [AurenFox][Module] Message
 pub fn log_info(module: &str, msg: &str) {
     println!(
-        "{}->{} {}{}{} {}",
+        "{}{} -> {}{}{} {}",
         "Auren".bright_cyan().bold(),
         "Fox".bright_red(),
         "[".white(),
@@ -18,7 +18,7 @@ pub fn log_info(module: &str, msg: &str) {
 /// Standardized warning logging
 pub fn log_warn(module: &str, msg: &str) {
     println!(
-        "{}->{} {}{}{} {}",
+        "{}{} -> {}{}{} {}",
         "Auren".bright_cyan().bold(),
         "Fox".bright_red(),
         "[".white(),
@@ -31,7 +31,7 @@ pub fn log_warn(module: &str, msg: &str) {
 /// Standardized error logging (Panics)
 pub fn log_err(module: &str, msg: &str) -> ! {
     panic!(
-        "{}->{} {}{}{} {}",
+        "{}{} -> {}{}{} {}",
         "Auren".bright_cyan().bold(),
         "Fox".bright_red(),
         "[".white(),

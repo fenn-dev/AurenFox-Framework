@@ -1,4 +1,5 @@
-use ash::{amd::display_native_hdr::Device, vk};
+use std::ffi::CString;
+use ash::vk;
 
 pub struct AurenRenderer {
     pub extent: vk::Extent2D,
@@ -10,6 +11,15 @@ pub struct AurenRenderer {
     pub logical_device: ash::Device,
     pub render_pass: Option<vk::RenderPass>,
     pub frame_buffers: Vec<vk::Framebuffer>,
+
+    pub compute_pipeline_layout: vk::PipelineLayout,
+    pub compute_pipeline: vk::Pipeline,
+}
+
+pub struct AurenSync {
+    pub image_available: vk::Semaphore,
+    pub render_finished: vk::Semaphore,
+    pub in_flight_fence: vk::Fence,
 }
 
 impl AurenRenderer {
@@ -37,14 +47,12 @@ impl AurenRenderer {
             logical_device.create_descriptor_set_layout(&layout_info, None).unwrap()
         };
 
-        // 2. Pipeline Layout
         let layouts = [descriptor_set_layout];
         let pipeline_layout_info = vk::PipelineLayoutCreateInfo::default().set_layouts(&layouts);
         let pipeline_layout = unsafe {
             logical_device.create_pipeline_layout(&pipeline_layout_info, None).unwrap()
         };
 
-        // 3. Descriptor Pool & Set
         let pool_sizes = [
             vk::DescriptorPoolSize::default()
                 .ty(vk::DescriptorType::STORAGE_BUFFER)
@@ -57,6 +65,7 @@ impl AurenRenderer {
         let pool_info = vk::DescriptorPoolCreateInfo::default()
             .max_sets(1)
             .pool_sizes(&pool_sizes);
+
         let descriptor_pool = unsafe {
             logical_device.create_descriptor_pool(&pool_info, None).unwrap()
         };
@@ -64,24 +73,138 @@ impl AurenRenderer {
         let alloc_info = vk::DescriptorSetAllocateInfo::default()
             .descriptor_pool(descriptor_pool)
             .set_layouts(&layouts);
+
         let descriptor_set = unsafe {
             logical_device.allocate_descriptor_sets(&alloc_info).unwrap()[0]
         };
-
-        let graphics_pipeline = vk::Pipeline::null(); 
 
 
         Self {
             extent,
             descriptor_set_layout,
             pipeline_layout,
-            graphics_pipeline,
+            graphics_pipeline: vk::Pipeline::null(),
             descriptor_pool,
             descriptor_set,
             logical_device,
             render_pass: None,
             frame_buffers: Vec::new(),
+            compute_pipeline_layout: vk::PipelineLayout::null(),
+            compute_pipeline: vk::Pipeline::null(),
         }
+    }
+
+    pub fn create_shader_module(&self, code: Vec<u8>) -> vk::ShaderModule {
+        let shader_info = vk::ShaderModuleCreateInfo::default()
+            .code(unsafe {
+                let (prefix, code_u32, suffix) = code.align_to::<u32>();
+                if !prefix.is_empty() || !suffix.is_empty() {
+                    panic!("Shader code alignment error");
+                }
+                code_u32
+            });
+
+        unsafe {
+            self.logical_device
+                .create_shader_module(&shader_info, None)
+                .expect("Failed to create shader module")
+        }
+    }
+
+    pub fn create_graphics_pipeline(
+        &mut self,
+        vertex_shader: vk::ShaderModule,
+        fragment_shader: vk::ShaderModule,
+    ) {
+        let entry_name = CString::new("main").unwrap();
+
+        let shader_stages = [
+            vk::PipelineShaderStageCreateInfo::default()
+                .stage(vk::ShaderStageFlags::VERTEX)
+                .module(vertex_shader)
+                .name(&entry_name),
+            vk::PipelineShaderStageCreateInfo::default()
+                .stage(vk::ShaderStageFlags::FRAGMENT)
+                .module(fragment_shader)
+                .name(&entry_name),
+        ];
+
+        let vertex_input_info = vk::PipelineVertexInputStateCreateInfo::default();
+
+        let input_assembly = vk::PipelineInputAssemblyStateCreateInfo::default()
+            .topology(vk::PrimitiveTopology::TRIANGLE_LIST);
+
+        let viewports = [vk::Viewport::default()
+            .width(self.extent.width as f32)
+            .height(self.extent.height as f32)
+            .max_depth(1.0)];
+
+        let scissors = [vk::Rect2D::default()
+            .offset(vk::Offset2D {x: 0, y: 0})
+            .extent(self.extent)];
+
+        let viewport_state = vk::PipelineViewportStateCreateInfo::default()
+            .viewports(&viewports)
+            .scissors(&scissors);
+
+        let rasterizer = vk::PipelineRasterizationStateCreateInfo::default()
+            .depth_clamp_enable(false)
+            .rasterizer_discard_enable(false)
+            .polygon_mode(vk::PolygonMode::FILL)
+            .line_width(1.0)
+            .cull_mode(vk::CullModeFlags::BACK)
+            .front_face(vk::FrontFace::CLOCKWISE)
+            .depth_bias_enable(false);
+
+        let multisampling = vk::PipelineMultisampleStateCreateInfo::default()
+            .sample_shading_enable(false)
+            .rasterization_samples(vk::SampleCountFlags::TYPE_1);
+
+        let color_blend_attachment = vk::PipelineColorBlendAttachmentState::default()
+            .color_write_mask(vk::ColorComponentFlags::RGBA)
+            .blend_enable(false);
+
+        let color_blending = vk::PipelineColorBlendStateCreateInfo::default()
+            .logic_op_enable(false)
+            .attachments(std::slice::from_ref(&color_blend_attachment));
+
+        let pipeline_info = vk::GraphicsPipelineCreateInfo::default()
+            .stages(&shader_stages)
+            .vertex_input_state(&vertex_input_info)
+            .input_assembly_state(&input_assembly)
+            .viewport_state(&viewport_state)
+            .rasterization_state(&rasterizer)
+            .multisample_state(&multisampling)
+            .color_blend_state(&color_blending)
+            .layout(self.pipeline_layout)
+            .render_pass(self.render_pass.expect("Missing render_pass"))
+            .subpass(0);
+
+        self.graphics_pipeline = unsafe {
+            self.logical_device
+                .create_graphics_pipelines(vk::PipelineCache::null(), &[pipeline_info], None)
+                .expect("Failed to create graphics pipeline")[0]
+        };
+
+        self.render_pass = Some(self.render_pass.expect("Missing render_pass"));
+    }
+
+    pub fn create_compute_pipeline(&mut self, compute_module: vk::ShaderModule) {
+        let entry_name = std::ffi::CString::new("main").unwrap();
+
+        let stage_info = vk::PipelineShaderStageCreateInfo::default()
+            .stage(vk::ShaderStageFlags::COMPUTE)
+            .module(compute_module)
+            .name(&entry_name);
+
+        let create_info = vk::ComputePipelineCreateInfo::default()
+            .stage(stage_info)
+            .layout(self.pipeline_layout);
+
+        self.compute_pipeline = unsafe {
+            self.logical_device.create_compute_pipelines(vk::PipelineCache::null(), &[create_info], None)
+            .expect("Failed to create compute pipeline")[0]
+        };
     }
 
     pub fn update_descriptor_sets(
@@ -223,6 +346,13 @@ impl AurenRenderer {
             .subpasses(&subpasses)
             .dependencies(&dependencies);
 
+        let render_pass = unsafe {
+        device.create_render_pass(&render_pass_info, None)
+            .expect("Failed to create render pass")
+        };
+        
+        self.render_pass = Some(render_pass);
+
         return unsafe {
             device.create_render_pass(&render_pass_info, None)
             .expect("Failed to create render pass!")
@@ -252,6 +382,63 @@ impl AurenRenderer {
                         .expect("Failed to create framebuffer")
                 }
         }).collect();
+    }
+
+    pub fn create_sync_objects(device: &ash::Device) -> AurenSync {
+        let semaphore_info = vk::SemaphoreCreateInfo::default();
+        let fence_info = vk::FenceCreateInfo::default()
+            .flags(vk::FenceCreateFlags::SIGNALED);
+        
+        unsafe  {
+            AurenSync {
+                image_available: device.create_semaphore(&semaphore_info, None).unwrap(),
+                render_finished: device.create_semaphore(&semaphore_info, None).unwrap(),
+                in_flight_fence: device.create_fence(&fence_info, None).unwrap(),
+            }
+        }
+    }
+
+    pub fn record_commands(
+        &self,
+        cmd: vk::CommandBuffer,
+        framebuffer: vk::Framebuffer,
+        _vertex_buffer: vk::Buffer,
+        vertex_count: u32,
+    ) {
+        let begin_info = vk::CommandBufferBeginInfo::default();
+
+        unsafe {
+            self.logical_device.begin_command_buffer(cmd, &begin_info).unwrap();
+
+            let clear_values = [vk::ClearValue {
+                color: vk::ClearColorValue { float32: [0.02, 0.02, 0.02, 1.0] },
+            }];
+
+            let render_pass_info = vk::RenderPassBeginInfo::default()
+                .render_pass(self.render_pass.unwrap())
+                .framebuffer(framebuffer)
+                .render_area(self.extent.into())
+                .clear_values(&clear_values);
+
+            self.logical_device.cmd_begin_render_pass(cmd, &render_pass_info, vk::SubpassContents::INLINE);
+            self.logical_device.cmd_bind_pipeline(cmd, vk::PipelineBindPoint::GRAPHICS, self.graphics_pipeline);
+
+            // This links your DescriptorSet (Storage + Uniform) to the shader
+            self.logical_device.cmd_bind_descriptor_sets(
+                cmd,
+                vk::PipelineBindPoint::GRAPHICS,
+                self.pipeline_layout,
+                0,
+                &[self.descriptor_set],
+                &[],
+            );
+
+            // Draw!
+            self.logical_device.cmd_draw(cmd, vertex_count, 1, 0, 0);
+
+            self.logical_device.cmd_end_render_pass(cmd);
+            self.logical_device.end_command_buffer(cmd).unwrap();
+        }
     }
 }
 

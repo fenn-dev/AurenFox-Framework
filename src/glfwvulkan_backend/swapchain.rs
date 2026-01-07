@@ -7,6 +7,8 @@ pub struct AurenSwapChain {
     pub image_format: vk::SurfaceFormatKHR,
     pub extent: vk::Extent2D,
     pub vsync: bool,
+    pub swapchain: vk::SwapchainKHR,
+    pub swapchain_loader: khr::swapchain::Device,
 }
 
 impl AurenSwapChain {
@@ -56,6 +58,8 @@ impl AurenSwapChain {
             image_format: surface_format_khr,
             extent,
             vsync,
+            swapchain,
+            swapchain_loader,
         }
     }
     
@@ -120,5 +124,39 @@ impl AurenSwapChain {
         unsafe {
             swapchain_loader.get_swapchain_images(handle).expect("Failed to get swapchain images")
         }
+    }
+
+    pub fn create_image_views(
+        &self,
+        device: &ash::Device,
+        images: &[vk::Image],
+    ) -> Vec<vk::ImageView> {
+        images
+            .iter()
+            .map(|&image| {
+                let create_info = vk::ImageViewCreateInfo::default()
+                    .image(image)
+                    .view_type(vk::ImageViewType::TYPE_2D)
+                    .format(self.image_format.format)
+                    .components(vk::ComponentMapping {
+                        r: vk::ComponentSwizzle::IDENTITY,
+                        g: vk::ComponentSwizzle::IDENTITY,
+                        b: vk::ComponentSwizzle::IDENTITY,
+                        a: vk::ComponentSwizzle::IDENTITY,
+                    })
+                    .subresource_range(vk::ImageSubresourceRange {
+                        aspect_mask: vk::ImageAspectFlags::COLOR,
+                        base_mip_level: 0,
+                        level_count: 1,
+                        base_array_layer: 0,
+                        layer_count: 1,
+                    });
+                
+                unsafe {
+                    device.create_image_view(&create_info, None)
+                        .expect("Failed to create image view")
+                }
+            })
+            .collect()
     }
 }
