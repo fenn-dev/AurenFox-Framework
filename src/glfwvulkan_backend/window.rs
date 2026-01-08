@@ -118,4 +118,5 @@ impl AurenWindowManager {
     pub fn destroy_window(&mut self, id: usize) {
         self.windows.retain(|win| win.id != id );
     }
+
 }

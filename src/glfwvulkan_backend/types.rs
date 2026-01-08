@@ -34,6 +34,7 @@ impl Default for SceneData {
     }
 }
 
+#[derive(Debug, Clone)]
 pub struct SwapchainSupportDetails {
     pub capabilities: vk::SurfaceCapabilitiesKHR,
     pub formats: Vec<vk::SurfaceFormatKHR>,

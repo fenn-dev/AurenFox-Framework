@@ -1,4 +1,4 @@
-use std::{fs, u64};
+use std::u64;
 use ash::vk;
 use aurenfox::{glfwvulkan_backend::{
     buffers::AurenBuffer, context::AurenContext, device::AurenDevice, helpers, renderer::AurenRenderer, swapchain::AurenSwapChain, types::SwapchainSupportDetails, window::AurenWindowManager
@@ -36,6 +36,9 @@ fn main() {
     window_manager.create_window(&context.entry, &context.instance, "AurenFox Window", 720, 480, Some(0))
         .expect("Failed to create window");
 
+    window_manager.create_window(&context.entry, &context.instance, "AurenFox Window 2", 720, 480, Some(1))
+        .expect("Failed to create window");
+
     let window_entry = window_manager.get_window_by_id(0).expect("Err");
 
     // -- 3. Pick GPU & Create Logical Device --
@@ -52,24 +55,24 @@ fn main() {
         window_entry.surface
     );
 
-    let swapchain = AurenSwapChain::new(
-        &context.instance, 
-        context.logical_device.as_ref().expect("err"), 
-        &window_entry.window,
-        &window_entry.surface,
-        true,
-        &details
-    );
-
-    // -- 5. Initialize Renderer --
+    let swapchain = std::sync::Arc::new(std::sync::Mutex::new(
+        AurenSwapChain::new(
+            &context.instance,
+            context.logical_device.as_ref().expect("err"),
+            &window_entry.window,
+            &window_entry.surface,
+            true, // vsync
+            &details,
+        )
+    ));
+    
     let device = context.logical_device.as_ref().expect("err");
     let mut renderer = AurenRenderer::new(
         device.clone(), 
-        swapchain.extent, 
-        swapchain.image_format.format
+        swapchain.lock().unwrap().extent,
     );
 
-    renderer.create_render_pass(swapchain.image_format.format, device);
+    renderer.create_render_pass(swapchain.lock().unwrap().image_format.format, device);
 
     let vert_spv = std::fs::read("src/shaders/vert.spv").expect("Fix: run dxc for vertex");
     let frag_spv = std::fs::read("src/shaders/frag.spv").expect("Fix: run dxc for fragment");
@@ -82,13 +85,13 @@ fn main() {
     renderer.create_graphics_pipeline(v_mod, f_mod);
     renderer.create_compute_pipeline(c_mod);
 
-    let swapchain_images = swapchain.get_images(swapchain.swapchain_loader.clone(), swapchain.swapchain);
-    let swapchain_image_views = swapchain.create_image_views(device, &swapchain_images);
+    let swapchain_images = swapchain.lock().unwrap().get_images(swapchain.lock().unwrap().swapchain_loader.clone(), swapchain.lock().unwrap().swapchain);
+    let swapchain_image_views = swapchain.lock().unwrap().create_image_views(device, &swapchain_images);
 
     renderer.create_framebuffers(
         device,
         renderer.render_pass.expect("RenderPass was not initialized!"),
-        swapchain.extent,
+        swapchain.lock().unwrap().extent,
         &swapchain_image_views,
     );
 
@@ -153,13 +156,13 @@ fn main() {
         device.get_device_queue(optimal_gpu.graphics_index.unwrap(), 0)
     };
 
-    let swapchain_images = swapchain.get_images(swapchain.swapchain_loader.clone(), swapchain.swapchain);
-    let swapchain_image_views = swapchain.create_image_views(device, &swapchain_images);
+    let swapchain_images = swapchain.lock().unwrap().get_images(swapchain.lock().unwrap().swapchain_loader.clone(), swapchain.lock().unwrap().swapchain);
+    let swapchain_image_views = swapchain.lock().unwrap().create_image_views(device, &swapchain_images);
 
     renderer.create_framebuffers(
         device,
         renderer.render_pass.expect("RenderPass must be created first"),
-        swapchain.extent,
+        swapchain.lock().unwrap().extent,
         &swapchain_image_views,
     );
 
@@ -173,9 +176,9 @@ fn main() {
             device.reset_fences(&[sync_objects.in_flight_fence])
                 .expect("Failed to reset fence");
 
-            let (image_index, _is_suboptimal) = swapchain.swapchain_loader
+            let (image_index, _is_suboptimal) = swapchain.lock().unwrap().swapchain_loader
                 .acquire_next_image(
-                    swapchain.swapchain,
+                    swapchain.lock().unwrap().swapchain,
                     u64::MAX,
                     sync_objects.image_available,
                     vk::Fence::null(),
@@ -206,7 +209,7 @@ fn main() {
             device.queue_submit(graphics_queue, &[submit_info], sync_objects.in_flight_fence)
                 .expect("Failed to submit queue");
 
-            let swapchains = [swapchain.swapchain];
+            let swapchains = [swapchain.lock().unwrap().swapchain];
             let image_indices = [image_index];
 
             let present_info = vk::PresentInfoKHR::default()
@@ -214,7 +217,7 @@ fn main() {
                 .swapchains(&swapchains)
                 .image_indices(&image_indices);
 
-            swapchain.swapchain_loader
+            swapchain.lock().unwrap().swapchain_loader
                 .queue_present(graphics_queue, &present_info)
                 .expect("Failed to present");
         }

@@ -26,7 +26,6 @@ impl AurenRenderer {
     pub fn new(
         logical_device: ash::Device, 
         extent: vk::Extent2D,
-        surface_format: vk::Format,
     ) -> Self {
         // 1. Descriptor Set Layout
         let bindings = [

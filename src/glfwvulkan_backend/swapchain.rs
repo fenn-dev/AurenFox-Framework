@@ -1,9 +1,10 @@
-use ash::{Instance, khr::{self, swapchain}, vk};
+use ash::{Instance, khr, vk};
 use glfw::PWindow;
 
+use crate::glfwvulkan_backend::helpers;
+
+#[derive(Clone)]
 pub struct AurenSwapChain {
-    instance: Instance,
-    logical_device: vk::Device,
     pub image_format: vk::SurfaceFormatKHR,
     pub extent: vk::Extent2D,
     pub vsync: bool,
@@ -20,14 +21,12 @@ impl AurenSwapChain {
         vsync: bool, 
         details: &crate::types::SwapchainSupportDetails
     ) -> Self {
-        // 1. Use the Device loader for the swapchain
         let swapchain_loader = ash::khr::swapchain::Device::new(instance, device);
 
         let surface_format_khr = Self::choose_swap_surface_format(details);
         let present_mode = Self::choose_swap_present_mode(details, vsync);
         let extent = Self::choose_swap_extent(details, window);
 
-        // 2. image_count MUST be mutable
         let mut image_count = details.capabilities.min_image_count + 1;
         if details.capabilities.max_image_count > 0 && image_count > details.capabilities.max_image_count {
             image_count = details.capabilities.max_image_count;
@@ -50,17 +49,63 @@ impl AurenSwapChain {
         let swapchain = unsafe {
             swapchain_loader
                 .create_swapchain(&create_info, None)
-                .expect("Failed to create swap chain!")
+                .expect("Failed to create swapchain!")
         };
         Self {
-            instance: instance.clone(),
-            logical_device: device.handle(),
             image_format: surface_format_khr,
             extent,
             vsync,
             swapchain,
             swapchain_loader,
         }
+    }
+
+    pub fn recreate(
+        &mut self,
+        window: &PWindow, 
+        surface: &vk::SurfaceKHR, 
+        vsync: bool, 
+        details: &crate::types::SwapchainSupportDetails
+    ) {
+        unsafe {
+            self.swapchain_loader.destroy_swapchain(self.swapchain, None);
+        }
+
+        let surface_format_khr = Self::choose_swap_surface_format(details);
+        let present_mode = Self::choose_swap_present_mode(details, vsync);
+        let extent = Self::choose_swap_extent(details, window);
+
+        let mut image_count = details.capabilities.min_image_count + 1;
+        if details.capabilities.max_image_count > 0 && image_count > details.capabilities.max_image_count {
+            image_count = details.capabilities.max_image_count;
+        }
+
+        let create_info = vk::SwapchainCreateInfoKHR::default()
+            .surface(*surface)
+            .min_image_count(image_count)
+            .image_format(surface_format_khr.format)
+            .image_color_space(surface_format_khr.color_space)
+            .image_extent(extent)
+            .image_array_layers(1)
+            .image_usage(vk::ImageUsageFlags::COLOR_ATTACHMENT)
+            .image_sharing_mode(vk::SharingMode::EXCLUSIVE)
+            .pre_transform(details.capabilities.current_transform)
+            .composite_alpha(vk::CompositeAlphaFlagsKHR::OPAQUE)
+            .present_mode(present_mode)
+            .clipped(true);
+
+        self.swapchain = unsafe {
+            self.swapchain_loader
+                .create_swapchain(&create_info, None)
+                .expect("Failed to create swapchain!")
+        };
+
+        self.image_format = surface_format_khr;
+        self.extent = extent;
+
+        helpers::log_info("swapchain::recreate", &format!(
+            "Swap chain recreated: {}x{}", extent.width, extent.height
+        ).to_string());
     }
     
     fn choose_swap_surface_format(details: &crate::types::SwapchainSupportDetails) -> vk::SurfaceFormatKHR {
