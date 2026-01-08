@@ -85,7 +85,7 @@ impl AurenWindowManager {
     }
 
     #[allow(dead_code)]
-    pub fn update(&mut self) {
+    pub fn update<F>(&mut self, F: fn()) {
         self.glfw.poll_events();
 
         for window in &mut self.windows {
@@ -94,6 +94,7 @@ impl AurenWindowManager {
                     glfw::WindowEvent::FramebufferSize(w, h) => {
                         window.width = w as u32;
                         window.height = h as u32;
+                        F();
                     }
                     glfw::WindowEvent::Close => {
                         window.window.set_should_close(true);

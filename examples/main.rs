@@ -1,5 +1,5 @@
 use std::u64;
-use ash::vk;
+use ash::vk::{self, SurfaceKHR};
 use aurenfox::{glfwvulkan_backend::{
     buffers::AurenBuffer, context::AurenContext, device::AurenDevice, helpers, renderer::AurenRenderer, swapchain::AurenSwapChain, types::SwapchainSupportDetails, window::AurenWindowManager
 }, types::{SceneData, Vertex}};
@@ -167,7 +167,7 @@ fn main() {
     );
 
     while !window_manager.get_window_by_id(0).expect("Err").window.should_close() {
-        window_manager.update();
+        window_manager.update(vulkan_resize_callback);
         
         unsafe {
             device.wait_for_fences(&[sync_objects.in_flight_fence], true, u64::MAX)
