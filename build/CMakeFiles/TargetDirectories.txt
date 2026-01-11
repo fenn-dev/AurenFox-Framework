@@ -1,0 +1,3 @@
+C:/Users/rasmu/Desktop/AurenFox-Framework/build/CMakeFiles/AppExecutable.dir
+C:/Users/rasmu/Desktop/AurenFox-Framework/build/CMakeFiles/edit_cache.dir
+C:/Users/rasmu/Desktop/AurenFox-Framework/build/CMakeFiles/rebuild_cache.dir

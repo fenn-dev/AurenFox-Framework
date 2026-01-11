@@ -1,0 +1,22 @@
+{
+    "version": 1,
+    "revision": 0,
+    "rules": [
+        {
+            "primary-output": "CMakeFiles\\BackendModule.dir\\src\\glfwvulkan_backend\\GlfwVulkanBackend.ixx.obj",
+            "outputs": [
+                "C:\\Users\\rasmu\\Desktop\\AurenFox-Framework\\build\\vc140.pdb",
+                "CMakeFiles\\BackendModule.dir\\src\\glfwvulkan_backend\\GlfwVulkanBackend.ixx.obj.ddi",
+                "GlfwVulkanBackend.ifc"
+            ],
+            "provides": [
+                {
+                    "logical-name": "GlfwVulkanBackend",
+                    "source-path": "c:\\users\\rasmu\\desktop\\aurenfox-framework\\src\\glfwvulkan_backend\\glfwvulkanbackend.ixx",
+                    "is-interface": true
+                }
+            ],
+            "requires": []
+        }
+    ]
+}

@@ -1,0 +1,4 @@
+ninja_dyndep_version = 1.0
+build CMakeFiles\BackendModule.dir\src\glfwvulkan_backend\GlfwVulkanBackend.ixx.obj | CMakeFiles\BackendModule.dir\GlfwVulkanBackend.ifc: dyndep
+  restat = 1
+

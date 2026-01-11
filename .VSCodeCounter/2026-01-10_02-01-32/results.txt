@@ -1,0 +1,48 @@
+Date : 2026-01-10 02:01:32
+Directory : c:\Users\rasmu\Desktop\AurenFox-Framework\src
+Total : 18 files,  1346 codes, 30 comments, 266 blanks, all 1642 lines
+
+Languages
++----------+------------+------------+------------+------------+------------+
+| language | files      | code       | comment    | blank      | total      |
++----------+------------+------------+------------+------------+------------+
+| Rust     |         14 |      1,295 |         16 |        249 |      1,560 |
+| HLSL     |          4 |         51 |         14 |         17 |         82 |
++----------+------------+------------+------------+------------+------------+
+
+Directories
++-------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| path                                                                          | files      | code       | comment    | blank      | total      |
++-------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| .                                                                             |         18 |      1,346 |         30 |        266 |      1,642 |
+| . (Files)                                                                     |          1 |          5 |          2 |          2 |          9 |
+| framework                                                                     |          2 |         64 |          0 |         20 |         84 |
+| glfwvulkan_backend                                                            |         10 |      1,217 |         13 |        221 |      1,451 |
+| interfaces                                                                    |          1 |          9 |          1 |          6 |         16 |
+| shaders                                                                       |          4 |         51 |         14 |         17 |         82 |
++-------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+
+Files
++-------------------------------------------------------------------------------+----------+------------+------------+------------+------------+
+| filename                                                                      | language | code       | comment    | blank      | total      |
++-------------------------------------------------------------------------------+----------+------------+------------+------------+------------+
+| c:\Users\rasmu\Desktop\AurenFox-Framework\src\framework\mod.rs                | Rust     |         44 |          0 |         17 |         61 |
+| c:\Users\rasmu\Desktop\AurenFox-Framework\src\framework\settings.rs           | Rust     |         20 |          0 |          3 |         23 |
+| c:\Users\rasmu\Desktop\AurenFox-Framework\src\glfwvulkan_backend\buffers.rs   | Rust     |         61 |          0 |         12 |         73 |
+| c:\Users\rasmu\Desktop\AurenFox-Framework\src\glfwvulkan_backend\context.rs   | Rust     |         83 |          0 |         18 |        101 |
+| c:\Users\rasmu\Desktop\AurenFox-Framework\src\glfwvulkan_backend\device.rs    | Rust     |         72 |          0 |         19 |         91 |
+| c:\Users\rasmu\Desktop\AurenFox-Framework\src\glfwvulkan_backend\helpers.rs   | Rust     |         56 |          0 |          5 |         61 |
+| c:\Users\rasmu\Desktop\AurenFox-Framework\src\glfwvulkan_backend\mod.rs       | Rust     |          8 |          0 |          0 |          8 |
+| c:\Users\rasmu\Desktop\AurenFox-Framework\src\glfwvulkan_backend\renderer.rs  | Rust     |        524 |          9 |        107 |        640 |
+| c:\Users\rasmu\Desktop\AurenFox-Framework\src\glfwvulkan_backend\settings.rs  | Rust     |         29 |          3 |          4 |         36 |
+| c:\Users\rasmu\Desktop\AurenFox-Framework\src\glfwvulkan_backend\swapchain.rs | Rust     |        183 |          0 |         24 |        207 |
+| c:\Users\rasmu\Desktop\AurenFox-Framework\src\glfwvulkan_backend\types.rs     | Rust     |        100 |          1 |         14 |        115 |
+| c:\Users\rasmu\Desktop\AurenFox-Framework\src\glfwvulkan_backend\window.rs    | Rust     |        101 |          0 |         18 |        119 |
+| c:\Users\rasmu\Desktop\AurenFox-Framework\src\interfaces\mod.rs               | Rust     |          9 |          1 |          6 |         16 |
+| c:\Users\rasmu\Desktop\AurenFox-Framework\src\lib.rs                          | Rust     |          5 |          2 |          2 |          9 |
+| c:\Users\rasmu\Desktop\AurenFox-Framework\src\shaders\ComputeShader.hlsl      | HLSL     |         11 |          5 |          5 |         21 |
+| c:\Users\rasmu\Desktop\AurenFox-Framework\src\shaders\GlobalHeader.hlsli      | HLSL     |         13 |          2 |          2 |         17 |
+| c:\Users\rasmu\Desktop\AurenFox-Framework\src\shaders\PixelShader.hlsl        | HLSL     |         10 |          4 |          3 |         17 |
+| c:\Users\rasmu\Desktop\AurenFox-Framework\src\shaders\VertexShader.hlsl       | HLSL     |         17 |          3 |          7 |         27 |
+| Total                                                                         |          |      1,346 |         30 |        266 |      1,642 |
++-------------------------------------------------------------------------------+----------+------------+------------+------------+------------+

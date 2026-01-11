@@ -1,0 +1,11 @@
+cmake_minimum_required(VERSION 3.28)
+project(AurenFoxFramework LANGUAGES CXX)
+
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# Define the executable using main.cpp in the examples folder
+add_executable(AppExecutable "examples/main.cpp") # Path from root
+
+# Link the module
+target_link_libraries(AppExecutable PRIVATE BackendModule)

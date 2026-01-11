@@ -1,0 +1,8 @@
+[
+{
+  "directory": "C:/Users/rasmu/Desktop/AurenFox-Framework/build",
+  "command": "C:\\PROGRA~1\\MICROS~1\\18\\COMMUN~1\\VC\\Tools\\MSVC\\1450~1.357\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP /DWIN32 /D_WINDOWS /EHsc /Ob0 /Od /RTC1 -std:c++20 -MDd -Zi @CMakeFiles\\AppExecutable.dir\\examples\\main.cpp.obj.modmap /FoCMakeFiles\\AppExecutable.dir\\examples\\main.cpp.obj /FdCMakeFiles\\AppExecutable.dir\\ /FS -c C:\\Users\\rasmu\\Desktop\\AurenFox-Framework\\examples\\main.cpp",
+  "file": "C:\\Users\\rasmu\\Desktop\\AurenFox-Framework\\examples\\main.cpp",
+  "output": "CMakeFiles\\AppExecutable.dir\\examples\\main.cpp.obj"
+}
+]

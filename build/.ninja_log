@@ -1,0 +1,14 @@
+# ninja log v7
+7	52	7897869101800968	CMakeFiles/BackendModule.dir/src/glfwvulkan_backend/GlfwVulkanBackend.ixx.obj.ddi	455bfe820110f6ea
+8	518	7897886690123760	CMakeFiles/AppExecutable.dir/examples/main.cpp.obj.ddi	1e8db213dd3410aa
+53	91	7897869102256817	CMakeFiles/BackendModule.dir/CXX.dd	f9bd91b1a255ef67
+53	91	7897869102256817	C:/Users/rasmu/Desktop/AurenFox-Framework/build/CMakeFiles/BackendModule.dir/CXXModules.json	f9bd91b1a255ef67
+53	91	7897869102256817	CMakeFiles/BackendModule.dir/src/glfwvulkan_backend/GlfwVulkanBackend.ixx.obj.modmap	f9bd91b1a255ef67
+519	573	7897886695725185	CMakeFiles/AppExecutable.dir/CXX.dd	39aa06f11b4f1059
+519	573	7897886695725185	C:/Users/rasmu/Desktop/AurenFox-Framework/build/CMakeFiles/AppExecutable.dir/CXXModules.json	39aa06f11b4f1059
+519	573	7897886695725185	CMakeFiles/AppExecutable.dir/examples/main.cpp.obj.modmap	39aa06f11b4f1059
+92	151	7897869103173958	CMakeFiles/BackendModule.dir/src/glfwvulkan_backend/GlfwVulkanBackend.ixx.obj	d0f4bacf0bc9c8eb
+152	223	7897869103254137	BackendModule.lib	e3bc9374070397ce
+92	151	7897869103173958	CMakeFiles/BackendModule.dir/GlfwVulkanBackend.ifc	d0f4bacf0bc9c8eb
+574	1832	7897886695790299	CMakeFiles/AppExecutable.dir/examples/main.cpp.obj	e983300b983d3b23
+1832	2071	7897886708370174	AppExecutable.exe	e6880088abe549d8

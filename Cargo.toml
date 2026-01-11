@@ -1,0 +1,11 @@
+[package]
+name = "aurenfox"
+version = "0.1.0"
+edition = "2024" 
+
+[dependencies]
+glfw = { git = "https://github.com/PistonDevelopers/glfw-rs", features = ["vulkan"] }
+ash = "0.38"
+colored = "3.0.0"
+ash-window = "0.13.0" 
+raw-window-handle = "0.6"

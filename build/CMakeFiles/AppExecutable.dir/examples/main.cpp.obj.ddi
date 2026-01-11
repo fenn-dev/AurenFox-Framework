@@ -1,0 +1,14 @@
+{
+    "version": 1,
+    "revision": 0,
+    "rules": [
+        {
+            "primary-output": "CMakeFiles\\AppExecutable.dir\\examples\\main.cpp.obj",
+            "outputs": [
+                "C:\\Users\\rasmu\\Desktop\\AurenFox-Framework\\build\\vc140.pdb",
+                "CMakeFiles\\AppExecutable.dir\\examples\\main.cpp.obj.ddi"
+            ],
+            "requires": []
+        }
+    ]
+}

@@ -1,0 +1,19 @@
+{
+	"modules" : 
+	{
+		"GlfwVulkanBackend" : 
+		{
+			"bmi" : "C:/Users/rasmu/Desktop/AurenFox-Framework/build/CMakeFiles/BackendModule.dir/GlfwVulkanBackend.ifc",
+			"is-private" : false
+		}
+	},
+	"references" : 
+	{
+		"GlfwVulkanBackend" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "CMakeFiles\\BackendModule.dir\\GlfwVulkanBackend.ifc"
+		}
+	},
+	"usages" : {}
+}
