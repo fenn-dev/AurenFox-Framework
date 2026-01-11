@@ -26,10 +26,10 @@ class AurenWindow {
 
     AurenVec2D _size {};
     bool _framebufferResized = false;
-    std::string _windowName;
-    std::unique_ptr<GLFWwindow, WindowDeleter> _window;
-    VkSurfaceKHR _surface;
-    VkInstance _instance;
+    std::string _windowName = "";
+    std::unique_ptr<GLFWwindow, WindowDeleter> _window = nullptr;
+    VkSurfaceKHR _surface = nullptr;
+    VkInstance _instance = nullptr;
     public:
 
     AurenWindow(std::string title, AurenVec2D size, VkInstance instance);
@@ -37,6 +37,7 @@ class AurenWindow {
 
     AurenWindow(const AurenWindow&) = delete;
     AurenWindow& operator=(const AurenWindow&) = delete;
+    AurenWindow(AurenWindow&& other) noexcept;
 
     inline bool shouldClose() { return glfwWindowShouldClose(_window.get()); }
     inline void pollEvents() { glfwPollEvents(); }
@@ -55,6 +56,22 @@ class AurenWindow {
 
 
 };
+
+AurenWindow::AurenWindow(AurenWindow&& other) noexcept
+    :   _window(std::move(other._window)),
+        _instance(other._instance),
+        _surface(other._surface),
+        _size(other._size),
+        _windowName(std::move(other._windowName)),
+        _rendererResizeCallback(std::move(other._rendererResizeCallback))
+    {
+    
+    other._surface = VK_NULL_HANDLE;
+
+    if (_window) {
+        glfwSetWindowUserPointer(_window.get(), this);
+    }
+}
 
 AurenWindow::AurenWindow(std::string title, AurenVec2D size, VkInstance instance) 
     : _windowName(title), _size(size), _instance(instance) {
